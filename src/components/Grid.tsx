@@ -18,6 +18,10 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
     const handleMouseUp = () => {
       setIsMouseDown(false);
     };
+
+    if (!grid) {
+      return <div>Grid is not available</div>;
+    }
   
     return (
       <div
