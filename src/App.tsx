@@ -4,6 +4,7 @@ import GridComponent from './components/Grid';
 import { GridType } from './types';
 import { getNextGridState } from './utils/logic';
 import Controls from './components/Controls';
+import ThemeToggle from './components/ThemeToggle';
 
 const App: React.FC = () => {
   const [gridSize, setGridSize] = useState(20);
@@ -18,8 +19,10 @@ const App: React.FC = () => {
 
   const [isRunning, setIsRunning] = useState(false);
   const [speed, setSpeed] = useState(500); // Default speed in milliseconds
-  const [history, setHistory] = useState<GridType[]>([grid]);  
+  const [history, setHistory] = useState<GridType[]>([grid]);
   const [currentStep, setCurrentStep] = useState(0);
+  const [notification, setNotification] = useState<string | null>(null);
+
   const intervalRef = useRef<number | null>(null);
 
   // Refs to keep track of the latest currentStep and grid
@@ -88,7 +91,7 @@ const App: React.FC = () => {
   }, [isRunning, speed]);
 
   const onCellClick = (row: number, col: number) => {
-    const newGrid = grid.map((r, rowIdx) => 
+    const newGrid = grid.map((r, rowIdx) =>
       r.map((cell, colIdx) => {
         if (rowIdx === row && colIdx === col) {
           if (!cell.isAlive) {
@@ -159,6 +162,9 @@ const App: React.FC = () => {
     link.href = url;
     link.click();
     console.log('Grid exported.');
+
+    setNotification('Grid exported successfully!');
+    setTimeout(() => setNotification(null), 3000);
   };
 
   const handleImport = (file: File) => {
@@ -172,27 +178,53 @@ const App: React.FC = () => {
       }
     };
     reader.readAsText(file);
+
+    setNotification('Grid imported successfully!');
+    setTimeout(() => setNotification(null), 3000);
   };
 
   return (
-    <div className="p-4">
-      <Controls
-        isRunning={isRunning}
-        onStartPause={handleStartPause}
-        onClear={handleClear}
-        onRandom={handleRandom}
-        speed={speed}
-        onSpeedChange={handleSpeedChange}
-        gridSize={gridSize}
-        onGridSizeChange={handleGridSizeChange}
-        onExport={handleExport}
-        onImport={handleImport}
-        currentStep={currentStep}
-        handleStepBack={handleStepBack}
-        handleStepForward={handleStepForward}
-        historyLength={history.length}
-      />
-      <GridComponent grid={grid} onCellClick={onCellClick} />
+    <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+
+      <header className="p-4 bg-blue-600 text-white text-center">
+        <h1 className="font-sans text-3xl font-extrabold">Conway's Game of Life</h1>
+        <ThemeToggle />
+      </header>
+
+      <main className="flex flex-1 flex-col md:flex-row p-4 space-y-4 md:space-y-0 md:space-x-4">
+        <aside className="md:w-1/4 bg-white p-4 rounded shadow">
+          <Controls
+            isRunning={isRunning}
+            onStartPause={handleStartPause}
+            onClear={handleClear}
+            onRandom={handleRandom}
+            speed={speed}
+            onSpeedChange={handleSpeedChange}
+            gridSize={gridSize}
+            onGridSizeChange={handleGridSizeChange}
+            onExport={handleExport}
+            onImport={handleImport}
+            currentStep={currentStep}
+            handleStepBack={handleStepBack}
+            handleStepForward={handleStepForward}
+            historyLength={history.length}
+          />
+        </aside>
+        <section className="flex-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <GridComponent grid={grid} onCellClick={onCellClick} />
+        </section>
+      </main>
+
+      {/* <footer className="p-4 bg-blue-600 text-white text-center">
+        <p>&copy; {new Date().getFullYear()} Footer Content</p>
+      </footer> */}
+
+      {notification && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
+          {notification}
+        </div>
+      )}
+
     </div>
   );
 };
