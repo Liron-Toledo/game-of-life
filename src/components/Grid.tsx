@@ -10,10 +10,11 @@ interface GridProps {
 }
 
 const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
-  const minCellSize = 20;
-  const isMouseDown = useRef(false);
-  const currentAction = useRef<'setAlive' | 'setDead' | null>(null);
+  const minCellSize = 20; // Minimum cell size to ensure usability
+  const isMouseDown = useRef(false); // Track if the mouse is currently pressed
+  const currentAction = useRef<'setAlive' | 'setDead' | null>(null); // Track the current action
 
+  // Handlers to manage mouse state
   const handleMouseDown = useCallback(() => {
     isMouseDown.current = true;
   }, []);
@@ -34,6 +35,7 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
 
       const handleCellMouseDown = () => {
         if (!isMouseDown.current) {
+          // Determine action based on current cell state
           const action = cell.isAlive ? 'setDead' : 'setAlive';
           currentAction.current = action;
           onCellClick(rowIndex, columnIndex, action);
@@ -62,7 +64,7 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
 
   return (
     <div
-      className="w-full h-full"
+      className="w-full h-full bg-gray-100 dark:bg-gray-900"
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}

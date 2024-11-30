@@ -102,7 +102,7 @@ const App: React.FC = () => {
   
         // Otherwise, update the grid
         const newGrid = [...prevGrid];
-        newGrid[row] = [...prevGrid[row]]; // Clone the row
+        newGrid[row] = [...prevGrid[row]];
   
         newGrid[row][col] = {
           isAlive: action === 'setAlive',
@@ -152,10 +152,17 @@ const App: React.FC = () => {
   }, []);
 
   const handleGridSizeChange = useCallback((newSize: number) => {
+    const minSize = 3;
     const maxSize = 1000;
+    
     if (newSize > maxSize) {
       setNotification(`Maximum grid size is ${maxSize}.`);
       newSize = maxSize;
+    }
+
+    if (newSize < minSize) {
+      setNotification(`Minimum grid size is ${minSize}.`);
+      newSize = minSize;
     }
 
     setGridSize(newSize);
