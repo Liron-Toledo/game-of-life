@@ -1,48 +1,98 @@
-import React, { useState } from 'react';
+import React, { useRef, useCallback } from 'react';
+import { FixedSizeGrid as VirtualizedGrid } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import Cell from './Cell';
 import { GridType } from '../types';
 
 interface GridProps {
   grid: GridType;
-  onCellClick: (row: number, col: number) => void;
+  onCellClick: (row: number, col: number, action: 'setAlive' | 'setDead') => void;
 }
 
 const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
-    const [isMouseDown, setIsMouseDown] = useState(false);
-  
-    const handleMouseDown = (row: number, col: number) => {
-      setIsMouseDown(true);
-      onCellClick(row, col);
-    };
-  
-    const handleMouseUp = () => {
-      setIsMouseDown(false);
-    };
+  const minCellSize = 20;
+  const isMouseDown = useRef(false);
+  const currentAction = useRef<'setAlive' | 'setDead' | null>(null);
 
-    if (!grid) {
-      return <div>Grid is not available</div>;
-    }
-  
-    return (
-      <div
-        className="grid grid-cols-1"
-        onMouseLeave={handleMouseUp}
-        onMouseUp={handleMouseUp}
-      >
-        {grid.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex">
-            {row.map((cell, colIndex) => (
-              <Cell
-                key={`${rowIndex}-${colIndex}`}
-                cell={cell}
-                onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
-                onMouseEnter={() => isMouseDown && onCellClick(rowIndex, colIndex)}
-              />
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  };
+  const handleMouseDown = useCallback(() => {
+    isMouseDown.current = true;
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    isMouseDown.current = false;
+    currentAction.current = null;
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    isMouseDown.current = false;
+    currentAction.current = null;
+  }, []);
+
+  const CellRenderer = useCallback(
+    ({ columnIndex, rowIndex, style }: any) => {
+      const cell = grid[rowIndex][columnIndex];
+
+      const handleCellMouseDown = () => {
+        if (!isMouseDown.current) {
+          const action = cell.isAlive ? 'setDead' : 'setAlive';
+          currentAction.current = action;
+          onCellClick(rowIndex, columnIndex, action);
+        }
+      };
+
+      const handleCellMouseEnter = () => {
+        if (isMouseDown.current && currentAction.current) {
+          onCellClick(rowIndex, columnIndex, currentAction.current);
+        }
+      };
+
+      return (
+        <div
+          style={style}
+          onMouseDown={handleCellMouseDown}
+          onMouseEnter={handleCellMouseEnter}
+          onDragStart={(e) => e.preventDefault()}
+        >
+          <Cell cell={cell} />
+        </div>
+      );
+    },
+    [grid, onCellClick]
+  );
+
+  return (
+    <div
+      className="w-full h-full"
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleMouseDown}
+      onTouchEnd={handleMouseUp}
+    >
+      <AutoSizer>
+        {({ width, height }) => {
+          const cellSize = Math.max(
+            Math.floor(Math.min(width / grid.length, height / grid.length)),
+            minCellSize
+          );
+
+          return (
+            <VirtualizedGrid
+              columnCount={grid.length}
+              rowCount={grid.length}
+              columnWidth={cellSize}
+              rowHeight={cellSize}
+              width={width}
+              height={height}
+              itemKey={({ rowIndex, columnIndex }) => `${rowIndex}-${columnIndex}`}
+            >
+              {CellRenderer}
+            </VirtualizedGrid>
+          );
+        }}
+      </AutoSizer>
+    </div>
+  );
+};
 
 export default Grid;

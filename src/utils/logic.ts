@@ -1,76 +1,98 @@
-import { GridType } from '../types';
+import { GridType, CellType } from '../types';
+import { CellCoordinates, serializeCoords, deserializeCoords } from './coordinate';
+import { getAliveCellsSet, getCellsToEvaluate } from './grid';
 
 export const getNextGridState = (currentGrid: GridType): GridType => {
   const rows = currentGrid.length;
   const cols = currentGrid[0].length;
 
-  const nextGrid: GridType = currentGrid.map((row) => row.map((cell) => ({ ...cell })));
+  const aliveCells = getAliveCellsSet(currentGrid);
+  const cellsToEvaluate = getCellsToEvaluate(aliveCells);
 
-  const getNeighbors = (x: number, y: number): { count: number; colors: string[] } => {
+  const nextAliveCells = new Set<CellCoordinates>();
+  const cellColors: { [key: CellCoordinates]: string } = {};
+
+  cellsToEvaluate.forEach((coord) => {
+    const [x, y] = deserializeCoords(coord);
+
+    // Skip out-of-bounds coordinates
+    if (x < 0 || y < 0 || x >= rows || y >= cols) {
+      return;
+    }
+
     let aliveNeighbors = 0;
-    const colors: string[] = [];
+    const neighborColors: string[] = [];
 
-    for (let i = -1; i <= 1; i++) {
-      for (let j = -1; j <= 1; j++) {
-        if (i === 0 && j === 0) continue; // Skip the cell itself
-        const nx = x + i;
-        const ny = y + j;
-        if (nx < 0 || ny < 0 || nx >= rows || ny >= cols) continue; // Out of bounds
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if (dx === 0 && dy === 0) continue;
 
-        const neighbor = currentGrid[nx][ny];
-        if (neighbor.isAlive) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= rows || ny >= cols) continue;
+
+        const neighborCoord = serializeCoords(nx, ny);
+        if (aliveCells.has(neighborCoord)) {
           aliveNeighbors += 1;
-          if (neighbor.color) colors.push(neighbor.color);
+          const color = currentGrid[nx][ny].color;
+          if (color) neighborColors.push(color);
         }
       }
     }
 
-    return { count: aliveNeighbors, colors };
-  };
+    const currentCellAlive = aliveCells.has(coord);
+    const cell: CellType = currentGrid[x][y];
 
-  for (let x = 0; x < rows; x++) {
-    for (let y = 0; y < cols; y++) {
-      const { count: aliveNeighbors, colors: neighborColors } = getNeighbors(x, y);
-      const cell = currentGrid[x][y];
-
-      if (cell.isAlive) {
-        // Survival
-        if (aliveNeighbors < 2 || aliveNeighbors > 3) {
-          nextGrid[x][y].isAlive = false;
-          nextGrid[x][y].color = '';
-        }
-        // Else, cell survives with the same color
+    if (currentCellAlive) {
+      // Survival
+      if (aliveNeighbors === 2 || aliveNeighbors === 3) {
+        nextAliveCells.add(coord);
+        cellColors[coord] = cell.color;
       } else {
-        // Birth
-        if (aliveNeighbors === 3) {
-          nextGrid[x][y].isAlive = true;
+        // Cell dies
+      }
+    } else {
+      // Birth
+      if (aliveNeighbors === 3) {
+        nextAliveCells.add(coord);
 
-          if (neighborColors.length > 0) {
-            // Inherit the most prevalent color
-            const colorCounts: Record<string, number> = {};
-            neighborColors.forEach((color) => {
-              colorCounts[color] = (colorCounts[color] || 0) + 1;
-            });
+        // Determine the most prevalent color among neighbors
+        if (neighborColors.length > 0) {
+          const colorCounts: Record<string, number> = {};
+          neighborColors.forEach((color) => {
+            colorCounts[color] = (colorCounts[color] || 0) + 1;
+          });
 
-            // Determine the most prevalent color
-            let prevalentColor = neighborColors[0];
-            let maxCount = colorCounts[prevalentColor];
-            for (const color in colorCounts) {
-              if (colorCounts[color] > maxCount) {
-                prevalentColor = color;
-                maxCount = colorCounts[color];
-              }
+          let prevalentColor = neighborColors[0];
+          let maxCount = colorCounts[prevalentColor];
+          for (const color in colorCounts) {
+            if (colorCounts[color] > maxCount) {
+              prevalentColor = color;
+              maxCount = colorCounts[color];
             }
-
-            nextGrid[x][y].color = prevalentColor;
-          } else {
-            // Assign a random color if no neighboring colors
-            nextGrid[x][y].color = `hsl(${Math.random() * 360}, 100%, 50%)`;
           }
+
+          cellColors[coord] = prevalentColor;
+        } else {
+          // Assign a random color if no neighboring colors
+          cellColors[coord] = `hsl(${Math.random() * 360}, 100%, 50%)`;
         }
       }
     }
-  }
+  });
+
+  // Construct the next grid state
+  const nextGrid: GridType = currentGrid.map((row) =>
+    row.map(() => ({ isAlive: false, color: '' }))
+  );
+
+  nextAliveCells.forEach((coord) => {
+    const [x, y] = deserializeCoords(coord);
+    nextGrid[x][y] = {
+      isAlive: true,
+      color: cellColors[coord] || `hsl(${Math.random() * 360}, 100%, 50%)`,
+    };
+  });
 
   return nextGrid;
 };

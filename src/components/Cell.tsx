@@ -1,21 +1,19 @@
+// In Cell.tsx
 import React from 'react';
 import { CellType } from '../types';
 
 interface CellProps {
   cell: CellType;
-  onMouseDown: () => void;
-  onMouseEnter: () => void;
 }
 
-const Cell: React.FC<CellProps> = React.memo(({ cell, onMouseDown, onMouseEnter }) => {
+const Cell: React.FC<CellProps> = React.memo(({ cell }) => {
   return (
     <div
-      className={`w-6 h-6 md:w-4 md:h-4 border border-gray-300 dark:border-gray-600 
-        cursor-pointer transition-transform transform 
-        hover:scale-110 relative`}
-      style={{ backgroundColor: cell.isAlive ? cell.color : 'white' }}
-      onMouseDown={onMouseDown}
-      onMouseEnter={onMouseEnter}
+      className={`w-full h-full border border-gray-300 dark:border-gray-600 cursor-pointer cell`}
+      style={{
+        backgroundColor: cell.isAlive ? cell.color : 'white',
+        boxShadow: cell.isAlive ? 'inset 0 0 5px rgba(0,0,0,0.3)' : 'none',
+      }}
       aria-label={cell.isAlive ? 'Alive Cell' : 'Dead Cell'}
     ></div>
   );

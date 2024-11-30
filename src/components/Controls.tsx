@@ -47,8 +47,8 @@ const Controls: React.FC<ControlsProps> = ({
                 <button
                     onClick={onStartPause}
                     className={`px-4 py-2 rounded 
-                ${isRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} 
-                text-white font-semibold transition-colors`}
+                        ${isRunning ? 'bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800' : 'bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800'} 
+                        text-white font-semibold transition-colors`}
                 >
                     {isRunning ? 'Pause' : 'Start'}
                 </button>
@@ -68,7 +68,7 @@ const Controls: React.FC<ControlsProps> = ({
 
             {/* Speed Control */}
             <div>
-                <label htmlFor="speed" className="block text-sm font-medium text-gray-700 mb-1">Speed (ms): {speed}</label>
+                <label htmlFor="speed" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Speed (ms): {speed}</label>
                 <input
                     id="speed"
                     type="range"
@@ -83,7 +83,7 @@ const Controls: React.FC<ControlsProps> = ({
 
             {/* Grid Size Control */}
             <div>
-                <label htmlFor="gridSize" className="block text-sm font-medium text-gray-700 mb-1">Grid Size: {gridSize}x{gridSize}</label>
+                <label htmlFor="gridSize" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grid Size: {gridSize}x{gridSize}</label>
                 <input
                     id="gridSize"
                     type="number"
@@ -91,7 +91,7 @@ const Controls: React.FC<ControlsProps> = ({
                     max="1000"
                     value={gridSize}
                     onChange={(e) => onGridSizeChange(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-300"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded focus:outline-none focus:ring focus:border-blue-300"
                 />
             </div>
 
@@ -123,7 +123,7 @@ const Controls: React.FC<ControlsProps> = ({
                 >
                     Export
                 </button>
-                <label className="px-4 py-2 bg-teal-500 hover:bg-teal-600 rounded text-white font-semibold cursor-pointer">
+                <label className="px-4 py-2 bg-teal-500 hover:bg-teal-600 rounded text-white font-semibold cursor-pointer flex items-center justify-center">
                     Import
                     <input type="file" accept=".json" onChange={handleImport} className="hidden" />
                 </label>

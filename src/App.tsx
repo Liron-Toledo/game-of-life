@@ -1,6 +1,5 @@
-// src/App.tsx
-import React, { useState, useEffect, useRef } from 'react';
-import GridComponent from './components/Grid';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Grid from './components/Grid';
 import { GridType } from './types';
 import { getNextGridState } from './utils/logic';
 import Controls from './components/Controls';
@@ -38,7 +37,7 @@ const App: React.FC = () => {
   }, [grid]);
 
   // Helper function to update grid and history
-  const updateGridAndHistory = (newGrid: GridType) => {
+  const updateGridAndHistory = useCallback((newGrid: GridType) => {
     setHistory((prevHistory) => {
       const updatedHistory = [...prevHistory.slice(0, currentStepRef.current + 1), newGrid];
       console.log('Updated History:', updatedHistory);
@@ -46,14 +45,14 @@ const App: React.FC = () => {
     });
     setGrid(newGrid);
     setCurrentStep((prevStep) => prevStep + 1);
-  };
+  }, []);
 
-  const runSimulation = () => {
+  const runSimulation = useCallback(() => {
     const nextGrid = getNextGridState(gridRef.current);
     updateGridAndHistory(nextGrid);
-  };
+  }, [updateGridAndHistory]);
 
-  const handleStepBack = () => {
+  const handleStepBack = useCallback(() => {
     if (currentStep > 0) {
       const previousStep = currentStep - 1;
       setGrid(history[previousStep]);
@@ -63,9 +62,9 @@ const App: React.FC = () => {
       console.log('history', history);
       console.log('history step', history[previousStep]);
     }
-  };
+  }, [currentStep, history]);
 
-  const handleStepForward = () => {
+  const handleStepForward = useCallback(() => {
     if (currentStep < history.length - 1) {
       const nextStep = currentStep + 1;
       setGrid(history[nextStep]);
@@ -75,7 +74,7 @@ const App: React.FC = () => {
       console.log('history', history);
       console.log('history step', history[nextStep]);
     }
-  };
+  }, [currentStep, history]);
 
   useEffect(() => {
     if (isRunning) {
@@ -88,31 +87,42 @@ const App: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, speed]);
+  }, [isRunning, speed, runSimulation]);
 
-  const onCellClick = (row: number, col: number) => {
-    const newGrid = grid.map((r, rowIdx) =>
-      r.map((cell, colIdx) => {
-        if (rowIdx === row && colIdx === col) {
-          if (!cell.isAlive) {
-            // Assign a random color when cell is made alive
-            return { isAlive: true, color: `hsl(${Math.random() * 360}, 100%, 50%)` };
-          } else {
-            // Make cell dead and clear its color
-            return { isAlive: false, color: '' };
-          }
+  // Updated onCellClick to accept an action parameter
+  const onCellClick = useCallback(
+    (row: number, col: number, action: 'setAlive' | 'setDead') => {
+      setGrid((prevGrid) => {
+        const cell = prevGrid[row][col];
+  
+        // If the cell's state is already what we want, do nothing
+        if ((action === 'setAlive' && cell.isAlive) || (action === 'setDead' && !cell.isAlive)) {
+          return prevGrid;
         }
-        return cell;
-      })
-    );
-    updateGridAndHistory(newGrid);
-  };
+  
+        // Otherwise, update the grid
+        const newGrid = [...prevGrid];
+        newGrid[row] = [...prevGrid[row]]; // Clone the row
+  
+        newGrid[row][col] = {
+          isAlive: action === 'setAlive',
+          color: action === 'setAlive'
+            ? cell.color || `hsl(${Math.random() * 360}, 100%, 50%)`
+            : '', // Retain color if alive, else clear it
+        };
+  
+        updateGridAndHistory(newGrid);
+        return newGrid;
+      });
+    },
+    [updateGridAndHistory]
+  );
 
-  const handleStartPause = () => {
-    setIsRunning(!isRunning);
-  };
+  const handleStartPause = useCallback(() => {
+    setIsRunning((prev) => !prev);
+  }, []);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     const emptyGrid = Array.from({ length: gridSize }, () =>
       Array.from({ length: gridSize }, () => ({ isAlive: false, color: '' }))
     );
@@ -120,9 +130,9 @@ const App: React.FC = () => {
     setHistory([emptyGrid]);
     setCurrentStep(0);
     console.log('Grid cleared. History reset.');
-  };
+  }, [gridSize]);
 
-  const handleRandom = () => {
+  const handleRandom = useCallback(() => {
     const randomGrid = Array.from({ length: gridSize }, () =>
       Array.from({ length: gridSize }, () => {
         if (Math.random() < 0.3) {
@@ -134,14 +144,20 @@ const App: React.FC = () => {
     );
     updateGridAndHistory(randomGrid);
     console.log('Random grid generated.');
-  };
+  }, [gridSize, updateGridAndHistory]);
 
-  const handleSpeedChange = (newSpeed: number) => {
+  const handleSpeedChange = useCallback((newSpeed: number) => {
     setSpeed(newSpeed);
     console.log(`Speed changed to ${newSpeed} ms.`);
-  };
+  }, []);
 
-  const handleGridSizeChange = (newSize: number) => {
+  const handleGridSizeChange = useCallback((newSize: number) => {
+    const maxSize = 1000;
+    if (newSize > maxSize) {
+      setNotification(`Maximum grid size is ${maxSize}.`);
+      newSize = maxSize;
+    }
+
     setGridSize(newSize);
     const newGrid = Array.from({ length: newSize }, () =>
       Array.from({ length: newSize }, () => ({ isAlive: false, color: '' }))
@@ -150,9 +166,9 @@ const App: React.FC = () => {
     setHistory([newGrid]);
     setCurrentStep(0);
     console.log(`Grid size changed to ${newSize}. History reset.`);
-  };
+  }, []);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     const dataStr = JSON.stringify(grid);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -165,34 +181,37 @@ const App: React.FC = () => {
 
     setNotification('Grid exported successfully!');
     setTimeout(() => setNotification(null), 3000);
-  };
+  }, [grid]);
 
-  const handleImport = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        const importedGrid: GridType = JSON.parse(event.target.result as string);
-        updateGridAndHistory(importedGrid);
-        setGridSize(importedGrid.length);
-        console.log('Grid imported.');
-      }
-    };
-    reader.readAsText(file);
+  const handleImport = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const importedGrid: GridType = JSON.parse(event.target.result as string);
+          updateGridAndHistory(importedGrid);
+          setGridSize(importedGrid.length);
+          console.log('Grid imported.');
+        }
+      };
+      reader.readAsText(file);
 
-    setNotification('Grid imported successfully!');
-    setTimeout(() => setNotification(null), 3000);
-  };
+      setNotification('Grid imported successfully!');
+      setTimeout(() => setNotification(null), 3000);
+    },
+    [updateGridAndHistory]
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
 
-      <header className="p-4 bg-blue-600 text-white text-center">
+      <header className="p-4 bg-blue-600 dark:bg-blue-800 text-white flex items-center justify-between">
         <h1 className="font-sans text-3xl font-extrabold">Conway's Game of Life</h1>
         <ThemeToggle />
       </header>
 
       <main className="flex flex-1 flex-col md:flex-row p-4 space-y-4 md:space-y-0 md:space-x-4">
-        <aside className="md:w-1/4 bg-white p-4 rounded shadow">
+        <aside className="md:w-1/4 bg-white dark:bg-gray-800 dark:text-white p-4 rounded shadow">
           <Controls
             isRunning={isRunning}
             onStartPause={handleStartPause}
@@ -211,7 +230,9 @@ const App: React.FC = () => {
           />
         </aside>
         <section className="flex-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <GridComponent grid={grid} onCellClick={onCellClick} />
+          <div className="w-full h-full">
+            <Grid grid={grid} onCellClick={onCellClick} />
+          </div>
         </section>
       </main>
 
@@ -220,7 +241,7 @@ const App: React.FC = () => {
       </footer> */}
 
       {notification && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        <div className="fixed bottom-4 right-4 bg-green-500 dark:bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg">
           {notification}
         </div>
       )}
