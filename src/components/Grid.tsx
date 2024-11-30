@@ -64,7 +64,7 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
 
   return (
     <div
-      className="w-full h-full bg-gray-100 dark:bg-gray-900"
+      className="w-full h-full"
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}

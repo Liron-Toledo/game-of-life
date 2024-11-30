@@ -4,6 +4,7 @@ import { GridType } from './types';
 import { getNextGridState } from './utils/logic';
 import Controls from './components/Controls';
 import ThemeToggle from './components/ThemeToggle';
+import Notification from './components/Notification';
 
 const App: React.FC = () => {
   const [gridSize, setGridSize] = useState(20);
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
 
   const intervalRef = useRef<number | null>(null);
+  const notificationTimeout = useRef<number | null>(null);
 
   // Refs to keep track of the latest currentStep and grid
   const currentStepRef = useRef(currentStep);
@@ -94,23 +96,23 @@ const App: React.FC = () => {
     (row: number, col: number, action: 'setAlive' | 'setDead') => {
       setGrid((prevGrid) => {
         const cell = prevGrid[row][col];
-  
+
         // If the cell's state is already what we want, do nothing
         if ((action === 'setAlive' && cell.isAlive) || (action === 'setDead' && !cell.isAlive)) {
           return prevGrid;
         }
-  
+
         // Otherwise, update the grid
         const newGrid = [...prevGrid];
         newGrid[row] = [...prevGrid[row]];
-  
+
         newGrid[row][col] = {
           isAlive: action === 'setAlive',
           color: action === 'setAlive'
             ? cell.color || `hsl(${Math.random() * 360}, 100%, 50%)`
             : '', // Retain color if alive, else clear it
         };
-  
+
         updateGridAndHistory(newGrid);
         return newGrid;
       });
@@ -154,14 +156,14 @@ const App: React.FC = () => {
   const handleGridSizeChange = useCallback((newSize: number) => {
     const minSize = 3;
     const maxSize = 1000;
-    
+
     if (newSize > maxSize) {
-      setNotification(`Maximum grid size is ${maxSize}.`);
+      createNotification(`Maximum grid size is ${maxSize}.`)
       newSize = maxSize;
     }
 
     if (newSize < minSize) {
-      setNotification(`Minimum grid size is ${minSize}.`);
+      createNotification(`Minimum grid size is ${minSize}.`)
       newSize = minSize;
     }
 
@@ -186,8 +188,7 @@ const App: React.FC = () => {
     link.click();
     console.log('Grid exported.');
 
-    setNotification('Grid exported successfully!');
-    setTimeout(() => setNotification(null), 3000);
+    createNotification('Grid exported successfully!');
   }, [grid]);
 
   const handleImport = useCallback(
@@ -203,11 +204,22 @@ const App: React.FC = () => {
       };
       reader.readAsText(file);
 
-      setNotification('Grid imported successfully!');
-      setTimeout(() => setNotification(null), 3000);
+      createNotification('Grid imported successfully!');
     },
     [updateGridAndHistory]
   );
+
+  const createNotification = (message: string, milliseconds: number = 3000) => {
+    setNotification(message);
+
+    if (notificationTimeout.current) {
+      clearTimeout(notificationTimeout.current); // Clear existing timeout
+    }
+
+    notificationTimeout.current = setTimeout(() => {
+      setNotification(null); // Trigger the exit animation
+    }, milliseconds);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
@@ -236,6 +248,7 @@ const App: React.FC = () => {
             historyLength={history.length}
           />
         </aside>
+
         <section className="flex-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
           <div className="w-full h-full">
             <Grid grid={grid} onCellClick={onCellClick} />
@@ -247,11 +260,7 @@ const App: React.FC = () => {
         <p>&copy; {new Date().getFullYear()} Footer Content</p>
       </footer> */}
 
-      {notification && (
-        <div className="fixed bottom-4 right-4 bg-green-500 dark:bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg">
-          {notification}
-        </div>
-      )}
+      <Notification message={notification} />
 
     </div>
   );
