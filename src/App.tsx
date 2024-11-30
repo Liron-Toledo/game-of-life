@@ -91,7 +91,13 @@ const App: React.FC = () => {
     const newGrid = grid.map((r, rowIdx) => 
       r.map((cell, colIdx) => {
         if (rowIdx === row && colIdx === col) {
-          return { ...cell, isAlive: !cell.isAlive };
+          if (!cell.isAlive) {
+            // Assign a random color when cell is made alive
+            return { isAlive: true, color: `hsl(${Math.random() * 360}, 100%, 50%)` };
+          } else {
+            // Make cell dead and clear its color
+            return { isAlive: false, color: '' };
+          }
         }
         return cell;
       })
@@ -115,10 +121,13 @@ const App: React.FC = () => {
 
   const handleRandom = () => {
     const randomGrid = Array.from({ length: gridSize }, () =>
-      Array.from({ length: gridSize }, () => ({
-        isAlive: Math.random() < 0.3,
-        color: '',
-      }))
+      Array.from({ length: gridSize }, () => {
+        if (Math.random() < 0.3) {
+          // Assign a random color to alive cells
+          return { isAlive: true, color: `hsl(${Math.random() * 360}, 100%, 50%)` };
+        }
+        return { isAlive: false, color: '' };
+      })
     );
     updateGridAndHistory(randomGrid);
     console.log('Random grid generated.');
