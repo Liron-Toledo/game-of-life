@@ -10,6 +10,11 @@ export default {
       },
     },
   },
+  variants: {
+    extend: {
+      filter: ['hover'],
+    },
+  },
   plugins: [],
   darkMode: 'class'
 }
