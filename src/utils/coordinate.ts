@@ -13,5 +13,28 @@ export const serializeCoords = (x: number, y: number): CellCoordinates => `${x},
  * @param coord - The serialized coordinate string.
  * @returns A tuple containing the x and y coordinates.
  */
-export const deserializeCoords = (coord: CellCoordinates): [number, number] =>
-  coord.split(',').map(Number) as [number, number];
+export const deserializeCoords = (coord: CellCoordinates): [number, number] => {
+  const parts = coord.split(',');
+
+  // Ensure we have exactly two parts
+  if (parts.length !== 2) {
+    throw new Error(`Invalid coordinate string: "${coord}"`);
+  }
+
+  const [xStr, yStr] = parts;
+
+  // Check for empty strings
+  if (xStr === '' || yStr === '') {
+    throw new Error(`Invalid coordinate string: "${coord}"`);
+  }
+
+  const x = Number(xStr);
+  const y = Number(yStr);
+
+  // Ensure both parts are valid numbers
+  if (isNaN(x) || isNaN(y)) {
+    throw new Error(`Invalid coordinate string: "${coord}"`);
+  }
+
+  return [x, y];
+};

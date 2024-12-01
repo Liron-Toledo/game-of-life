@@ -37,8 +37,10 @@ export const getCellsToEvaluate = (aliveCells: Set<CellCoordinates>): Set<CellCo
         const nx = x + dx;
         const ny = y + dy;
 
-        // Skip coordinates outside the grid bounds will be handled later
-        cellsToEvaluate.add(serializeCoords(nx, ny));
+        // Ensure coordinates are non-negative (valid for the grid)
+        if (nx >= 0 && ny >= 0) {
+          cellsToEvaluate.add(serializeCoords(nx, ny));
+        }
       }
     }
   });

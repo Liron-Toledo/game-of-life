@@ -24,8 +24,8 @@ const App: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
 
   const intervalRef = useRef<number | null>(null);
-  const notificationTimeout = useRef<number | null>(null);
-
+  const notificationTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
   // Refs to keep track of the latest currentStep and grid
   const currentStepRef = useRef(currentStep);
   const gridRef = useRef(grid);
