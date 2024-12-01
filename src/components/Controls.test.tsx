@@ -1,4 +1,3 @@
-// src/components/Controls.test.tsx
 import { render, fireEvent } from '@testing-library/react';
 import Controls from './Controls';
 

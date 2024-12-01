@@ -1,4 +1,3 @@
-// src/App.test.tsx
 import { render, fireEvent } from '@testing-library/react';
 import App from './App';
 
