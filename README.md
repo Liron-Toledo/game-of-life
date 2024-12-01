@@ -63,6 +63,7 @@ On mobile devices, controls are accessible through a settings icon in the header
 
 ## Project Structure
 
+```bash
 src/
 ├── components/
 │   ├── Cell.tsx           # Individual cell rendering
@@ -76,6 +77,7 @@ src/
 │   ├── logic.ts           # Game logic for the next grid state
 ├── App.tsx                # Main application component
 ├── types.ts               # Type definitions
+```
 
 ## Testing
 
