@@ -1,4 +1,5 @@
 import React from 'react';
+import ThemeToggle from './ThemeToggle';
 
 interface ControlsProps {
     isRunning: boolean;
@@ -141,6 +142,7 @@ const Controls: React.FC<ControlsProps> = ({
                     <input type="file" accept=".json" onChange={handleImportFile} className="hidden" />
                 </label>
             </div>
+            <ThemeToggle />
         </div>
     );
 };

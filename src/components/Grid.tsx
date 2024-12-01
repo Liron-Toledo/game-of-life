@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { FixedSizeGrid as VirtualizedGrid } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import Cell from './Cell';
@@ -11,7 +11,8 @@ interface GridProps {
 
 /** Component to display and manage grid */
 const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
-  const minCellSize = 20; // Minimum size for a cell to ensure usability
+  const [mobileGridHeight, setMobileGridHeight] = useState<number | null>(null); // Dynamic height for the grid on mobile
+  const [minCellSize, setMinCellSize] = useState(20); // Initial minimum cell size
   const isMouseDown = useRef(false); // Tracks if the mouse is currently pressed
   const currentAction = useRef<'setAlive' | 'setDead' | null>(null); // Tracks the current action being performed
 
@@ -36,6 +37,27 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
   const handleMouseLeave = useCallback(() => {
     isMouseDown.current = false;
     currentAction.current = null; // Reset the current action
+  }, []);
+
+  /**
+   * Updates grid height and cell size based on screen size.
+   */
+  useEffect(() => {
+    const updateGridSettings = () => {
+      const isMobile = window.innerWidth < 640; // Mobile breakpoint
+      const header = document.querySelector('header');
+      const headerHeight = header ? header.offsetHeight : 0;
+
+      // Set grid height dynamically on mobile, null otherwise
+      setMobileGridHeight(isMobile ? window.innerHeight - headerHeight : null);
+
+      // Adjust minimum cell size for mobile and larger screens
+      setMinCellSize(isMobile ? 10 : 20);
+    };
+
+    updateGridSettings();
+    window.addEventListener('resize', updateGridSettings); // Update on resize
+    return () => window.removeEventListener('resize', updateGridSettings);
   }, []);
 
   /**
@@ -66,12 +88,33 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
         }
       };
 
+      /**
+     * Handles touch start on a cell to toggle its state.
+     */
+      const handleCellTouchStart = () => {
+        const action = cell.isAlive ? 'setDead' : 'setAlive'; // Determine action based on cell state
+        currentAction.current = action;
+        onCellClick(rowIndex, columnIndex, action);
+      };
+
+      /**
+       * Handles touch move over a cell to update its state.
+       */
+      const handleCellTouchMove = () => {
+        if (currentAction.current) {
+          onCellClick(rowIndex, columnIndex, currentAction.current);
+        }
+      };
+
       return (
         <div
           style={style} // Position and size of the cell (calculated by VirtualizedGrid)
           onMouseDown={handleCellMouseDown}
           onMouseEnter={handleCellMouseEnter}
+          onTouchStart={handleCellTouchStart}
+          onTouchMove={handleCellTouchMove}
           onDragStart={(e) => e.preventDefault()} // Prevents unwanted drag interactions
+
         >
           <Cell cell={cell} />
         </div>
@@ -82,7 +125,9 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
 
   return (
     <div
-      className="w-full h-full"
+      className="w-full"
+      style={{ height: mobileGridHeight || '100%' }}
+
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
@@ -91,6 +136,7 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
     >
       <AutoSizer>
         {({ width, height }) => {
+
           // Dynamically calculate cell size based on grid dimensions and available space
           const cellSize = Math.max(
             Math.floor(Math.min(width / grid.length, height / grid.length)),
@@ -114,6 +160,7 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
       </AutoSizer>
     </div>
   );
+
 };
 
 export default Grid;

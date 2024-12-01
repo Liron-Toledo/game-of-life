@@ -3,8 +3,8 @@ import Grid from './components/Grid';
 import { GridType } from './types';
 import { getNextGridState } from './utils/logic';
 import Controls from './components/Controls';
-import ThemeToggle from './components/ThemeToggle';
 import Notification from './components/Notification';
+import settings from './assets/settings.svg'
 
 const App: React.FC = () => {
   // State variables
@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<GridType[]>([grid]);
   const [currentStep, setCurrentStep] = useState(0);
   const [notification, setNotification] = useState<string | null>(null);
+  const [isControlsOpen, setIsControlsOpen] = useState<boolean>(false);
 
   // References for managing intervals and external state
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -236,13 +237,24 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+      {/* Header */}
       <header className="p-4 bg-blue-600 dark:bg-blue-800 text-white flex items-center justify-between">
-        <h1 className="font-sans text-3xl font-extrabold">Conway's Game of Life</h1>
-        <ThemeToggle />
+        <h1 className="font-sans text-3xl font-extrabold">Game of Life</h1>
+        {/* Mobile Controls */}
+        <img
+          width={30}
+          height={30}
+          src={settings}
+          alt="Settings"
+          onClick={() => setIsControlsOpen(!isControlsOpen)}
+          className="block md:hidden cursor-pointer"
+        />
       </header>
 
-      <main className="flex flex-1 flex-col md:flex-row p-4 space-y-4 md:space-y-0 md:space-x-4">
-        <aside className="md:w-1/4 bg-white dark:bg-gray-800 dark:text-white p-4 rounded shadow">
+      {/* Main Content */}
+      <main className="flex flex-1 flex-col md:flex-row">
+        {/* Sidebar Controls - Hidden on Mobile */}
+        <aside className="hidden md:block md:w-1/4 bg-white dark:bg-gray-800 dark:text-white p-4 rounded shadow">
           <Controls
             isRunning={isRunning}
             onStartPause={handleStartPause}
@@ -261,12 +273,44 @@ const App: React.FC = () => {
           />
         </aside>
 
-        <section className="flex-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        {/* Grid Section */}
+        <section className="flex-1 bg-white dark:bg-gray-800 p-2 md:p-6 rounded-lg shadow-lg">
           <Grid grid={grid} onCellClick={onCellClick} />
         </section>
       </main>
 
+      {/* Notification */}
       <Notification message={notification} />
+
+      {/* Mobile Controls Overlay */}
+      {isControlsOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded shadow-lg w-11/12 max-w-md">
+            <Controls
+              isRunning={isRunning}
+              onStartPause={handleStartPause}
+              onClear={handleClear}
+              onRandom={handleRandom}
+              speed={speed}
+              onSpeedChange={handleSpeedChange}
+              gridSize={gridSize}
+              onGridSizeChange={handleGridSizeChange}
+              onExport={handleExport}
+              onImport={handleImport}
+              currentStep={currentStep}
+              handleStepBack={handleStepBack}
+              handleStepForward={handleStepForward}
+              historyLength={history.length}
+            />
+            <button
+              className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800 text-white rounded"
+              onClick={() => setIsControlsOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
