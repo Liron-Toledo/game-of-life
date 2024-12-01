@@ -17,6 +17,7 @@ interface ControlsProps {
     historyLength: number;
 }
 
+/** Componen to manage various controls for the game of life */
 const Controls: React.FC<ControlsProps> = ({
     isRunning,
     onStartPause,
@@ -33,6 +34,10 @@ const Controls: React.FC<ControlsProps> = ({
     handleStepForward,
     historyLength
 }) => {
+    /**
+     * Handles importing files from local device
+     * @param e File input event
+     */
     const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             onImport(e.target.files[0]);

@@ -1,6 +1,10 @@
-// src/components/ThemeToggle.tsx
 import React, { useState, useEffect } from 'react';
 
+/**
+ * ThemeToggle component allows the user to toggle between light and dark themes.
+ * The theme preference is applied by adding or removing a `dark` class to the 
+ * root `<html>` element.
+ */
 const ThemeToggle: React.FC = () => {
   const [isDark, setIsDark] = useState(false);
 
