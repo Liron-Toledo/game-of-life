@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FiSun, FiMoon } from 'react-icons/fi';
 
 /**
  * ThemeToggle component allows the user to toggle between light and dark themes.
@@ -33,10 +34,14 @@ const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={() => setIsDark(!isDark)}
-      className="px-3 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg text-gray-800 dark:text-gray-200"
+      className="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full transition-colors duration-300"
       aria-label="Toggle Dark Mode"
     >
-      {isDark ? 'Dark' : 'Light'}
+      {isDark ? (
+        <FiMoon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+      ) : (
+        <FiSun className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+      )}
     </button>
   );
 };

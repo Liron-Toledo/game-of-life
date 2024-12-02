@@ -91,8 +91,17 @@ npm test
 
 ## Known Issues & Future Enhancements
 
-- **Mobile Optimization**: While functional, there is potential for further refinement in grid interaction on touch devices.
+- **Mobile Optimisation**: While functional, there is potential for further refinement in grid interaction on touch devices.
 - **Additional Features**:
   - Enable saving simulation history across sessions.
-  - Add more customization options for cell colors and grid styles.
+  - Add more customisation options for cell colors and grid styles.
   - Implement presets for different initial configurations.
+  - Possibly use consistent colour scheme for cells and rest of application
+  - Handle scenarios with grids larger than 1000x1000 efficiently.
+	- Utilize web workers or offload simulation logic to a background thread.
+	- Facilitate predefined grid setups for quick starts.
+  - Implement keyboard navigation for controls and grid interactions.
+- **Infinite Time & Resources**:
+  - Build a backend to save simulation states, share grids, or replay sessions.
+  - Create a mobile app using React Native for seamless mobile interactions.
+  - Implement advanced visualisation modes (e.g: heatmaps for cell activity).

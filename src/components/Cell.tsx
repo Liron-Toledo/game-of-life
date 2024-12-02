@@ -1,4 +1,3 @@
-// In Cell.tsx
 import React from 'react';
 import { CellType } from '../types';
 

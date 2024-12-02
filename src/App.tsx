@@ -5,6 +5,7 @@ import { getNextGridState } from './utils/logic';
 import Controls from './components/Controls';
 import Notification from './components/Notification';
 import settings from './assets/settings.svg'
+import ThemeToggle from './components/ThemeToggle';
 
 const App: React.FC = () => {
   // State variables
@@ -239,17 +240,24 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
       {/* Header */}
       <header className="p-4 bg-blue-600 dark:bg-blue-800 text-white flex items-center justify-between">
+        {/* Title */}
         <h1 className="font-sans text-3xl font-extrabold">Game of Life</h1>
-        {/* Mobile Controls */}
-        <img
-          width={30}
-          height={30}
-          src={settings}
-          alt="Settings"
-          onClick={() => setIsControlsOpen(!isControlsOpen)}
-          className="block md:hidden cursor-pointer"
-        />
+        {/* Right Side: Settings Button and ThemeToggle */}
+        <div className="flex items-center space-x-2">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+          {/* Mobile Settings Button */}
+          <img
+            width={30}
+            height={30}
+            src={settings}
+            alt="Settings"
+            onClick={() => setIsControlsOpen(!isControlsOpen)}
+            className="block md:hidden cursor-pointer"
+          />
+        </div>
       </header>
+
 
       {/* Main Content */}
       <main className="flex flex-1 flex-col md:flex-row">
