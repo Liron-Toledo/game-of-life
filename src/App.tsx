@@ -41,15 +41,52 @@ const App: React.FC = () => {
   }, [grid]);
 
   /**
-   * Updates the grid and adds it to the simulation history.
-   */
+  * Updates the grid and adds it to the simulation history.
+  * Prevents duplicate states from being added.
+  */
   const updateGridAndHistory = useCallback((newGrid: GridType) => {
-    setHistory((prevHistory) => [
-      ...prevHistory.slice(0, currentStepRef.current + 1),
-      newGrid,
-    ]);
-    setGrid(newGrid);
-    setCurrentStep((prevStep) => prevStep + 1);
+    setHistory((prevHistory) => {
+      const lastGrid = prevHistory[currentStepRef.current];
+
+      // Custom deep comparison for grid equality
+      const isSameGrid =
+        lastGrid &&
+        newGrid.every((row, rowIndex) =>
+          row.every(
+            (cell, colIndex) =>
+              cell.isAlive === lastGrid[rowIndex][colIndex].isAlive &&
+              cell.color === lastGrid[rowIndex][colIndex].color
+          )
+        );
+
+      if (isSameGrid) {
+        console.log('No change in grid state. Skipping history update.');
+        return prevHistory; // No change, return the current history as-is
+      }
+
+      console.log('Adding new grid state to history');
+      return [
+        ...prevHistory.slice(0, currentStepRef.current + 1), // Truncate future steps if any
+        newGrid,
+      ];
+    });
+
+    // Update grid and step only if it's a new state
+    const lastGrid = history[currentStep];
+    const isSameGrid =
+      lastGrid &&
+      newGrid.every((row, rowIndex) =>
+        row.every(
+          (cell, colIndex) =>
+            cell.isAlive === lastGrid[rowIndex][colIndex].isAlive &&
+            cell.color === lastGrid[rowIndex][colIndex].color
+        )
+      );
+
+    if (!isSameGrid) {
+      setGrid(newGrid);
+      setCurrentStep((prevStep) => prevStep + 1);
+    }
   }, []);
 
   /**

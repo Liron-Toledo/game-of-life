@@ -123,6 +123,14 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
     [grid, onCellClick]
   );
 
+  if (!grid || !grid.length) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <p className="text-gray-500">No grid data available.</p>
+      </div>
+    );
+  }
+
   return (
     <div
       className="w-full"
