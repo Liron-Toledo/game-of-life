@@ -24,7 +24,7 @@ This is a React implementation of Conway's Game of Life, a zero-player cellular 
 To get started locally:
 
    ```bash
-   git clone https://github.com/yourusername/conways-game-of-life.git
+   git clone https://github.com/Liron-Toledo/game-of-life.git
    cd conways-game-of-life
    npm install
    npm start
