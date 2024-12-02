@@ -60,11 +60,9 @@ const App: React.FC = () => {
         );
 
       if (isSameGrid) {
-        console.log('No change in grid state. Skipping history update.');
         return prevHistory; // No change, return the current history as-is
       }
 
-      console.log('Adding new grid state to history');
       return [
         ...prevHistory.slice(0, currentStepRef.current + 1), // Truncate future steps if any
         newGrid,
