@@ -22,8 +22,8 @@ const App: React.FC = () => {
   const [speed, setSpeed] = useState(500);
   const [history, setHistory] = useState<GridType[]>([grid]);
   const [currentStep, setCurrentStep] = useState(0);
-  const [notification, setNotification] = useState<string | null>(null);
-  const [isControlsOpen, setIsControlsOpen] = useState<boolean>(false);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+    const [isControlsOpen, setIsControlsOpen] = useState<boolean>(false);
 
   // References for managing intervals and external state
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -188,11 +188,11 @@ const App: React.FC = () => {
     const maxSize = 1000;
 
     if (newSize > maxSize) {
-      createNotification(`Maximum grid size is ${maxSize}.`);
+      createNotification(`Maximum grid size is ${maxSize}.`, "warning");
       newSize = maxSize;
     }
     if (newSize < minSize) {
-      createNotification(`Minimum grid size is ${minSize}.`);
+      createNotification(`Minimum grid size is ${minSize}.`, "warning");
       newSize = minSize;
     }
 
@@ -228,15 +228,28 @@ const App: React.FC = () => {
     (file: File) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
-          const importedGrid: GridType = JSON.parse(event.target.result as string);
-          updateGridAndHistory(importedGrid);
-          setGridSize(importedGrid.length);
+        try {
+          if (event.target?.result) {
+            // Validate and parse the JSON
+            const importedGrid: GridType = JSON.parse(event.target.result as string);
+  
+            // Validate the grid structure
+            if (!Array.isArray(importedGrid) || !importedGrid.every(row => Array.isArray(row))) {
+              throw new Error('Invalid grid format');
+            }
+  
+            updateGridAndHistory(importedGrid);
+            setGridSize(importedGrid.length);
+  
+            // Success notification
+            createNotification('Grid imported successfully!');
+          }
+        } catch (error) {
+          console.error('Failed to import grid:', error);
+          createNotification('Error importing grid. Please check the file format.', "error");
         }
       };
       reader.readAsText(file);
-
-      createNotification('Grid imported successfully!');
     },
     [updateGridAndHistory]
   );
@@ -244,8 +257,12 @@ const App: React.FC = () => {
   /**
    * Displays a notification message for a specified duration.
    */
-  const createNotification = (message: string, milliseconds: number = 3000) => {
-    setNotification(message);
+  const createNotification = (
+    message: string,
+    type: 'success' | 'error' | 'warning' = 'success',
+    milliseconds: number = 5000
+  ) => {
+    setNotification({ message, type });
     if (notificationTimeout.current) {
       clearTimeout(notificationTimeout.current);
     }
@@ -323,8 +340,8 @@ const App: React.FC = () => {
       </main>
 
       {/* Notification */}
-      <Notification message={notification} />
-
+      <Notification message={notification?.message} type={notification?.type} />
+      
       {/* Mobile Controls Overlay */}
       {isControlsOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">

@@ -109,6 +109,9 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
       return (
         <div
           style={style} // Position and size of the cell (calculated by VirtualizedGrid)
+          id={`cell-${rowIndex}-${columnIndex}`} // Unique ID for the cell
+          data-testid={`cell-${rowIndex}-${columnIndex}`} // Test ID for testing
+          className={`cell ${cell.isAlive ? 'alive' : 'dead'}`} // Dynamic class based on cell state
           onMouseDown={handleCellMouseDown}
           onMouseEnter={handleCellMouseEnter}
           onTouchStart={handleCellTouchStart}
@@ -133,6 +136,7 @@ const Grid: React.FC<GridProps> = ({ grid, onCellClick }) => {
 
   return (
     <div
+      data-testid="grid"
       className="w-full"
       style={{ height: mobileGridHeight || '100%' }}
 

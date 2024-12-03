@@ -10,6 +10,6 @@ describe('Grid Component', () => {
 
   it('renders without crashing', () => {
     render(<Grid grid={grid} onCellClick={() => {}} />);
-    // Further testing may require more complex setups due to virtualization (Something to do if more time)
+    // Further testing may require more complex setups due to virtualization (Something to do if more time was available)
   });
 });
