@@ -92,6 +92,8 @@ npm test
 ## Known Issues & Future Enhancements
 
 - **Mobile Optimisation**: While functional, there is potential for further refinement in grid interaction on touch devices.
+- **Grid Unit Testing**: Due to challenges with grid virtualization, some unit tests have been omitted for now.
+
 - **Additional Features**:
   - Enable saving simulation history across sessions.
   - Add more customisation options for cell colors and grid styles.
