@@ -103,6 +103,7 @@ npm test
 	- Utilize web workers or offload simulation logic to a background thread.
 	- Facilitate predefined grid setups for quick starts.
   - Implement keyboard navigation for controls and grid interactions.
+  - Add additional unit testing throughout project
 - **Infinite Time & Resources**:
   - Build a backend to save simulation states, share grids, or replay sessions.
   - Create a mobile app using React Native for seamless mobile interactions.
