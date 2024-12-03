@@ -4,11 +4,20 @@ import { GridType } from './types';
 import { getNextGridState } from './utils/logic';
 import Controls from './components/Controls';
 import Notification from './components/Notification';
-import settings from './assets/settings.svg'
 import ThemeToggle from './components/ThemeToggle';
+import { FiMenu, FiX } from 'react-icons/fi';
+import BottomSheet from './components/BottomSheet';
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 
 const App: React.FC = () => {
   // State variables
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    const savedWidth = localStorage.getItem('sidebarWidth');
+    return savedWidth ? parseInt(savedWidth, 10) : 300; // Default width: 300px
+  });
   const [gridSize, setGridSize] = useState(20);
   const [grid, setGrid] = useState<GridType>(
     Array.from({ length: gridSize }, () =>
@@ -23,7 +32,7 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<GridType[]>([grid]);
   const [currentStep, setCurrentStep] = useState(0);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
-    const [isControlsOpen, setIsControlsOpen] = useState<boolean>(false);
+  const [isResizing, setIsResizing] = useState(false); // State to control transition during resizing
 
   // References for managing intervals and external state
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -41,14 +50,34 @@ const App: React.FC = () => {
   }, [grid]);
 
   /**
-  * Updates the grid and adds it to the simulation history.
-  * Prevents duplicate states from being added.
-  */
-  const updateGridAndHistory = useCallback((newGrid: GridType) => {
-    setHistory((prevHistory) => {
-      const lastGrid = prevHistory[currentStepRef.current];
+   * Updates the grid and adds it to the simulation history.
+   * Prevents duplicate states from being added.
+   */
+  const updateGridAndHistory = useCallback(
+    (newGrid: GridType) => {
+      setHistory((prevHistory) => {
+        const lastGrid = prevHistory[currentStepRef.current];
 
-      // Custom deep comparison for grid equality
+        // Custom deep comparison for grid equality
+        const isSameGrid =
+          lastGrid &&
+          newGrid.every((row, rowIndex) =>
+            row.every(
+              (cell, colIndex) =>
+                cell.isAlive === lastGrid[rowIndex][colIndex].isAlive &&
+                cell.color === lastGrid[rowIndex][colIndex].color
+            )
+          );
+
+        if (isSameGrid) {
+          return prevHistory; // No change, return the current history as-is
+        }
+
+        return [...prevHistory.slice(0, currentStepRef.current + 1), newGrid];
+      });
+
+      // Update grid and step only if it's a new state
+      const lastGrid = history[currentStep];
       const isSameGrid =
         lastGrid &&
         newGrid.every((row, rowIndex) =>
@@ -59,33 +88,13 @@ const App: React.FC = () => {
           )
         );
 
-      if (isSameGrid) {
-        return prevHistory; // No change, return the current history as-is
+      if (!isSameGrid) {
+        setGrid(newGrid);
+        setCurrentStep((prevStep) => prevStep + 1);
       }
-
-      return [
-        ...prevHistory.slice(0, currentStepRef.current + 1), // Truncate future steps if any
-        newGrid,
-      ];
-    });
-
-    // Update grid and step only if it's a new state
-    const lastGrid = history[currentStep];
-    const isSameGrid =
-      lastGrid &&
-      newGrid.every((row, rowIndex) =>
-        row.every(
-          (cell, colIndex) =>
-            cell.isAlive === lastGrid[rowIndex][colIndex].isAlive &&
-            cell.color === lastGrid[rowIndex][colIndex].color
-        )
-      );
-
-    if (!isSameGrid) {
-      setGrid(newGrid);
-      setCurrentStep((prevStep) => prevStep + 1);
-    }
-  }, []);
+    },
+    [history, currentStep]
+  );
 
   /**
    * Generates the next grid state and updates the simulation.
@@ -232,15 +241,15 @@ const App: React.FC = () => {
           if (event.target?.result) {
             // Validate and parse the JSON
             const importedGrid: GridType = JSON.parse(event.target.result as string);
-  
+
             // Validate the grid structure
             if (!Array.isArray(importedGrid) || !importedGrid.every(row => Array.isArray(row))) {
               throw new Error('Invalid grid format');
             }
-  
+
             updateGridAndHistory(importedGrid);
             setGridSize(importedGrid.length);
-  
+
             // Success notification
             createNotification('Grid imported successfully!');
           }
@@ -271,8 +280,8 @@ const App: React.FC = () => {
     }, milliseconds);
   };
 
-  /** 
-   * Effect to run simulation every 'speed' milliseconds 
+  /**
+   * Effect to run simulation every 'speed' milliseconds
    */
   useEffect(() => {
     if (isRunning) {
@@ -287,90 +296,128 @@ const App: React.FC = () => {
     };
   }, [isRunning, speed, runSimulation]);
 
+  /**
+   * Persist sidebar width to localStorage whenever it changes
+   */
+  useEffect(() => {
+    if (sidebarWidth > 0) {
+      localStorage.setItem('sidebarWidth', sidebarWidth.toString());
+    }
+  }, [sidebarWidth]);
+
+  /**
+   * Toggles the sidebar visibility
+   */
+  const toggleSidebar = () => {
+    if (window.innerWidth < 768) { // Assuming mobile breakpoint at 768px
+      setIsBottomSheetOpen((prev) => !prev);
+    } else {
+      setIsSidebarVisible((prev) => !prev);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
       {/* Header */}
       <header className="p-4 bg-blue-600 dark:bg-blue-800 text-white flex items-center justify-between">
-        {/* Title */}
         <h1 className="font-sans text-3xl font-extrabold">Game of Life</h1>
-        {/* Right Side: Settings Button and ThemeToggle */}
         <div className="flex items-center space-x-2">
-          {/* Theme Toggle */}
           <ThemeToggle />
-          {/* Mobile Settings Button */}
-          <img
-            width={30}
-            height={30}
-            src={settings}
-            alt="Settings"
-            onClick={() => setIsControlsOpen(!isControlsOpen)}
-            className="block md:hidden cursor-pointer"
-          />
+          <button
+            onClick={toggleSidebar}
+            className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-300"
+            aria-label={isSidebarVisible ? 'Hide Controls' : 'Show Controls'}
+          >
+            {(window.innerWidth >= 768 && isSidebarVisible) || (window.innerWidth < 768 && isBottomSheetOpen) ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
         </div>
       </header>
 
-
       {/* Main Content */}
-      <main className="flex flex-1 flex-col md:flex-row">
-        {/* Sidebar Controls - Hidden on Mobile */}
-        <aside className="hidden md:block md:w-1/4 bg-white dark:bg-gray-800 dark:text-white p-4 rounded shadow">
-          <Controls
-            isRunning={isRunning}
-            onStartPause={handleStartPause}
-            onClear={handleClear}
-            onRandom={handleRandom}
-            speed={speed}
-            onSpeedChange={handleSpeedChange}
-            gridSize={gridSize}
-            onGridSizeChange={handleGridSizeChange}
-            onExport={handleExport}
-            onImport={handleImport}
-            currentStep={currentStep}
-            handleStepBack={handleStepBack}
-            handleStepForward={handleStepForward}
-            historyLength={history.length}
-          />
-        </aside>
+      <main className="flex flex-1">
+        {/* Sidebar Controls */}
+        {window.innerWidth >= 768 && (
+          <ResizableBox
+            width={isSidebarVisible ? sidebarWidth : 0}
+            height={Infinity}
+            minConstraints={[250, Infinity]}
+            maxConstraints={[700, Infinity]} // Maximum width: 600px
+            axis="x" // Allow horizontal resizing only
+            onResizeStart={() => setIsResizing(true)}
+            onResizeStop={(event, { size }) => {
+              setSidebarWidth(size.width);
+              setIsResizing(false);
+              if (size.width > 0) {
+                localStorage.setItem('sidebarWidth', size.width.toString());
+              }
+            }}
+            handle={
+              <div
+                className="absolute top-0 right-0 h-full w-6 cursor-ew-resize bg-transparent"
+              />
+            }
+            className={`relative bg-white dark:bg-gray-800 text-white rounded shadow overflow-auto ${isResizing ? 'sidebar-no-transition' : 'sidebar-transition'
+              } `}
+            // Apply transition only when not resizing
+            style={
+              isResizing
+                ? { transition: 'none' }
+                : { transition: 'width 0.5s ease' }
+            }
+          >
+            {/* Controls Container with Proper Padding */}
+            <div className="p-4">
+              <Controls
+                isRunning={isRunning}
+                onStartPause={handleStartPause}
+                onClear={handleClear}
+                onRandom={handleRandom}
+                speed={speed}
+                onSpeedChange={handleSpeedChange}
+                gridSize={gridSize}
+                onGridSizeChange={handleGridSizeChange}
+                onExport={handleExport}
+                onImport={handleImport}
+                currentStep={currentStep}
+                handleStepBack={handleStepBack}
+                handleStepForward={handleStepForward}
+                historyLength={history.length}
+              />
+            </div>
+          </ResizableBox>
+        )}
 
         {/* Grid Section */}
-        <section className="flex-1 bg-white dark:bg-gray-800 p-2 md:p-6 rounded-lg shadow-lg">
+        <section
+          className={`flex-1 bg-white dark:bg-gray-800 p-2 md:p-6 rounded-lg shadow-lg transition-all duration-500 ${isSidebarVisible ? '' : 'w-full'
+            }`}
+        >
           <Grid grid={grid} onCellClick={onCellClick} />
         </section>
       </main>
 
+      {/* Bottom Sheet for Mobile */}
+      <BottomSheet isOpen={isBottomSheetOpen} onClose={() => setIsBottomSheetOpen(false)}>
+        <Controls
+          isRunning={isRunning}
+          onStartPause={handleStartPause}
+          onClear={handleClear}
+          onRandom={handleRandom}
+          speed={speed}
+          onSpeedChange={handleSpeedChange}
+          gridSize={gridSize}
+          onGridSizeChange={handleGridSizeChange}
+          onExport={handleExport}
+          onImport={handleImport}
+          currentStep={currentStep}
+          handleStepBack={handleStepBack}
+          handleStepForward={handleStepForward}
+          historyLength={history.length}
+        />
+      </BottomSheet>
+
       {/* Notification */}
       <Notification message={notification?.message} type={notification?.type} />
-      
-      {/* Mobile Controls Overlay */}
-      {isControlsOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded shadow-lg w-11/12 max-w-md">
-            <Controls
-              isRunning={isRunning}
-              onStartPause={handleStartPause}
-              onClear={handleClear}
-              onRandom={handleRandom}
-              speed={speed}
-              onSpeedChange={handleSpeedChange}
-              gridSize={gridSize}
-              onGridSizeChange={handleGridSizeChange}
-              onExport={handleExport}
-              onImport={handleImport}
-              currentStep={currentStep}
-              handleStepBack={handleStepBack}
-              handleStepForward={handleStepForward}
-              historyLength={history.length}
-            />
-            <button
-              className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800 text-white rounded"
-              onClick={() => setIsControlsOpen(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
