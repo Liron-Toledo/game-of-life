@@ -9,11 +9,11 @@ This is a React implementation of Conway's Game of Life, a zero-player cellular 
 - 🟦 **Dynamic Grid**: View and interact with the grid using mouse or touch.
 - 🎛️ **Controls**:
   - Start/Pause the simulation.
-  - Clear or randomize the grid.
+  - Clear or randomise the grid.
   - Adjust grid size and simulation speed.
   - Navigate through simulation history with "Step Back" and "Step Forward."
 - 🌗 **Theme Toggle**: Switch between light and dark themes.
-- 📱 **Mobile-Friendly**: Optimized for mobile devices with responsive design.
+- 📱 **Mobile-Friendly**: Optimised for mobile devices with responsive design.
 - 📁 **Export/Import**: Save the grid state to a JSON file or load a saved grid.
 - 🔔 **Notifications**: Provides feedback on actions like grid export, import, or size adjustments.
 
@@ -55,7 +55,7 @@ On mobile devices, controls are accessible through a settings icon in the header
 - **React**: Core library for building the UI.
 - **TypeScript**: Adds type safety to the project.
 - **Framer Motion**: For smooth animations (e.g., notifications).
-- **react-window**: Virtualized grid rendering for optimal performance.
+- **react-window**: Virtualised grid rendering for optimal performance.
 - **tailwindcss**: For styling and responsive design.
 - **File APIs**: Used for exporting and importing grid state as JSON.
 
@@ -92,18 +92,18 @@ npm test
 ## Known Issues & Future Enhancements
 
 - **Mobile Optimisation**: While functional, there is potential for further refinement in grid interaction on touch devices.
-- **Grid Unit Testing**: Due to challenges with grid virtualization, some unit tests have been omitted for now.
+- **Grid Unit Testing**: Due to challenges with grid virtualisation, some unit tests have been omitted for now.
 
 - **Additional Features**:
   - Enable saving simulation history across sessions.
   - Add more customisation options for cell colors and grid styles.
   - Implement presets for different initial configurations.
-  - Possibly use consistent colour scheme for cells and rest of application
+  - Possibly use consistent colour scheme for cells and rest of application.
   - Handle scenarios with grids larger than 1000x1000 efficiently.
-	- Utilize web workers or offload simulation logic to a background thread.
+	- Utilise web workers or offload simulation logic to a background thread.
 	- Facilitate predefined grid setups for quick starts.
   - Implement keyboard navigation for controls and grid interactions.
-  - Add additional unit testing throughout project
+  - Add additional unit testing throughout project.
 - **Infinite Time & Resources**:
   - Build a backend to save simulation states, share grids, or replay sessions.
   - Create a mobile app using React Native for seamless mobile interactions.
