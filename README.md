@@ -45,8 +45,8 @@ The app will be accessible at http://localhost:5173.
 ### Theme Toggle
 Switch between light and dark themes by clicking the 🌙/☀️ button.
 
-### Mobile
-On mobile devices, controls are accessible through a settings icon in the header. The grid occupies the full screen for a better viewing experience.
+### Controls Toggle
+Open and close control panel by clicking the icon in the header
 
 ---
 
