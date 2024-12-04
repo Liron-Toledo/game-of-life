@@ -8,7 +8,8 @@ import ThemeToggle from './components/ThemeToggle';
 import { FiMenu, FiX } from 'react-icons/fi';
 import BottomSheet from './components/BottomSheet';
 import { ResizableBox } from 'react-resizable';
-import 'react-resizable/css/styles.css';
+import useWindowSize from './hooks/useWindowSize';
+import { MOBILE_BREAKPOINT } from './constants';
 
 const App: React.FC = () => {
   // State variables
@@ -39,6 +40,9 @@ const App: React.FC = () => {
   const notificationTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const currentStepRef = useRef(currentStep);
   const gridRef = useRef(grid);
+
+  // Hook for screen size
+  const { width } = useWindowSize();
 
   // Update refs when state changes
   useEffect(() => {
@@ -309,7 +313,7 @@ const App: React.FC = () => {
    * Toggles the sidebar visibility
    */
   const toggleSidebar = () => {
-    if (window.innerWidth < 768) { // Assuming mobile breakpoint at 768px
+    if (width < MOBILE_BREAKPOINT) {
       setIsBottomSheetOpen((prev) => !prev);
     } else {
       setIsSidebarVisible((prev) => !prev);
@@ -328,7 +332,7 @@ const App: React.FC = () => {
             className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-300"
             aria-label={isSidebarVisible ? 'Hide Controls' : 'Show Controls'}
           >
-            {(window.innerWidth >= 768 && isSidebarVisible) || (window.innerWidth < 768 && isBottomSheetOpen) ? <FiX size={24} /> : <FiMenu size={24} />}
+            {(width >= MOBILE_BREAKPOINT && isSidebarVisible) || (width < MOBILE_BREAKPOINT && isBottomSheetOpen) ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
         </div>
       </header>
@@ -336,7 +340,7 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="flex flex-1">
         {/* Sidebar Controls */}
-        {window.innerWidth >= 768 && (
+        {width >= MOBILE_BREAKPOINT && (
           <ResizableBox
             width={isSidebarVisible ? sidebarWidth : 0}
             height={Infinity}
@@ -344,7 +348,7 @@ const App: React.FC = () => {
             maxConstraints={[700, Infinity]} // Maximum width: 600px
             axis="x" // Allow horizontal resizing only
             onResizeStart={() => setIsResizing(true)}
-            onResizeStop={(event, { size }) => {
+            onResizeStop={(_, { size }) => {
               setSidebarWidth(size.width);
               setIsResizing(false);
               if (size.width > 0) {
@@ -368,6 +372,7 @@ const App: React.FC = () => {
             {/* Controls Container with Proper Padding */}
             <div className="p-4">
               <Controls
+                parent='sidebar-'
                 isRunning={isRunning}
                 onStartPause={handleStartPause}
                 onClear={handleClear}
@@ -399,6 +404,7 @@ const App: React.FC = () => {
       {/* Bottom Sheet for Mobile */}
       <BottomSheet isOpen={isBottomSheetOpen} onClose={() => setIsBottomSheetOpen(false)}>
         <Controls
+          parent='bottomsheet-'
           isRunning={isRunning}
           onStartPause={handleStartPause}
           onClear={handleClear}

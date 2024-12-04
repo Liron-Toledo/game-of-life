@@ -56,6 +56,7 @@ On mobile devices, controls are accessible through a settings icon in the header
 - **TypeScript**: Adds type safety to the project.
 - **Framer Motion**: For smooth animations (e.g., notifications).
 - **react-window**: Virtualised grid rendering for optimal performance.
+- **react-resizable**: For dragging functionality
 - **tailwindcss**: For styling and responsive design.
 - **File APIs**: Used for exporting and importing grid state as JSON.
 
@@ -66,17 +67,21 @@ On mobile devices, controls are accessible through a settings icon in the header
 ```bash
 src/
 ├── components/
-│   ├── Cell.tsx           # Individual cell rendering
-│   ├── Grid.tsx           # Main grid component
-│   ├── Controls.tsx       # Sidebar and overlay controls
-│   ├── Notification.tsx   # Animated notification messages
-│   └── ThemeToggle.tsx    # Light/Dark mode toggle
+│   ├── BottomSheet.tsx      # Draggable bottom sheet component
+│   ├── Cell.tsx             # Individual cell rendering
+│   ├── Controls.tsx         # Sidebar and overlay controls
+│   ├── Grid.tsx             # Main grid component
+│   ├── Notification.tsx     # Animated notification messages
+│   └── ThemeToggle.tsx      # Light/Dark mode toggle
+├── hooks/
+│   └── useWindowSize.tsx    # Custom hook to track window size
 ├── utils/
-│   ├── coordinate.ts      # Coordinate serialization/deserialization
-│   ├── grid.ts            # Grid helper functions
-│   ├── logic.ts           # Game logic for the next grid state
-├── App.tsx                # Main application component
-├── types.ts               # Type definitions
+│   ├── coordinate.ts        # Coordinate serialization/deserialization
+│   ├── grid.ts              # Grid helper functions
+│   └── logic.ts             # Game logic for the next grid state
+├── App.tsx                  # Main application component
+├── index.css                # Global CSS styles
+├── types.ts                 # Type definitions
 ```
 
 ## Testing
@@ -103,7 +108,8 @@ npm test
 	- Utilise web workers or offload simulation logic to a background thread.
 	- Facilitate predefined grid setups for quick starts.
   - Implement keyboard navigation for controls and grid interactions.
-  - Add additional unit testing throughout project.
+  - Add additional unit testing throughout project (particularly for grid).
+  - Dragging of control sheet on mobile
 - **Infinite Time & Resources**:
   - Build a backend to save simulation states, share grids, or replay sessions.
   - Create a mobile app using React Native for seamless mobile interactions.

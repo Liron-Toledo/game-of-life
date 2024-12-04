@@ -15,6 +15,7 @@ interface ControlsProps {
     handleStepBack: () => void;
     handleStepForward: () => void;
     historyLength: number;
+    parent?: string
 }
 
 /** Component to manage various controls for the Game of Life */
@@ -32,7 +33,8 @@ const Controls: React.FC<ControlsProps> = ({
     currentStep,
     handleStepBack,
     handleStepForward,
-    historyLength
+    historyLength,
+    parent,
 }) => {
     /**
      * Handles importing files from local device
@@ -50,6 +52,7 @@ const Controls: React.FC<ControlsProps> = ({
             <div className="flex flex-col space-y-3">
                 {/* Start/Pause Button */}
                 <button
+                    data-testid={`${parent}start-button`}
                     onClick={onStartPause}
                     className={`w-full px-4 py-2 rounded 
                         ${isRunning
@@ -62,6 +65,7 @@ const Controls: React.FC<ControlsProps> = ({
 
                 {/* Clear Button */}
                 <button
+                    data-testid={`${parent}clear-button`}
                     onClick={onClear}
                     className="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded text-white font-semibold transition-colors duration-200"
                 >
@@ -70,6 +74,7 @@ const Controls: React.FC<ControlsProps> = ({
 
                 {/* Random Button */}
                 <button
+                    data-testid={`${parent}random-button`}
                     onClick={onRandom}
                     className="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 rounded text-white font-semibold transition-colors duration-200"
                 >
@@ -79,10 +84,11 @@ const Controls: React.FC<ControlsProps> = ({
 
             {/* Speed Control */}
             <div>
-                <label htmlFor="speed" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor={`${parent}speed`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Speed (ms): {speed}
                 </label>
                 <input
+                    data-testid={`${parent}speed-input`}
                     id="speed"
                     type="range"
                     min="100"
@@ -96,23 +102,25 @@ const Controls: React.FC<ControlsProps> = ({
 
             {/* Grid Size Control */}
             <div>
-                <label htmlFor="gridSize" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor={`${parent}gridSize-input`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Grid Size: {gridSize}x{gridSize}
                 </label>
                 <input
+                    data-testid={`${parent}gridSize-input`}
                     id="gridSize"
                     type="number"
                     min="3"
                     max="1000"
                     value={gridSize}
                     onChange={(e) => onGridSizeChange(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-black dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
 
             {/* History Controls */}
             <div className="flex space-x-3">
                 <button
+                    data-testid={`${parent}step-back-button`}
                     onClick={handleStepBack}
                     disabled={currentStep === 0}
                     className={`flex-1 px-4 py-2 rounded text-white font-semibold transition-colors duration-200 
@@ -123,6 +131,7 @@ const Controls: React.FC<ControlsProps> = ({
                     Step Back
                 </button>
                 <button
+                    data-testid={`${parent}step-forward-button`}
                     onClick={handleStepForward}
                     disabled={currentStep >= historyLength - 1}
                     className={`flex-1 px-4 py-2 rounded text-white font-semibold transition-colors duration-200 
@@ -138,6 +147,7 @@ const Controls: React.FC<ControlsProps> = ({
             <div className="flex flex-col space-y-3">
                 {/* Export Button */}
                 <button
+                    data-testid={`${parent}export-button`}
                     onClick={onExport}
                     className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 rounded text-white font-semibold transition-colors duration-200"
                 >
@@ -145,9 +155,10 @@ const Controls: React.FC<ControlsProps> = ({
                 </button>
 
                 {/* Import Button */}
-                <label className="w-full px-4 py-2 bg-teal-500 hover:bg-teal-600 dark:bg-teal-600 dark:hover:bg-teal-700 rounded text-white font-semibold cursor-pointer flex items-center justify-center">
+                <label htmlFor={`${parent}import-input`} className="w-full px-4 py-2 bg-teal-500 hover:bg-teal-600 dark:bg-teal-600 dark:hover:bg-teal-700 rounded text-white font-semibold cursor-pointer flex items-center justify-center">
                     Import
-                    <input type="file" accept=".json" onChange={handleImportFile} className="hidden" />
+                    <input data-testid={`${parent}import-input`}
+                        type="file" accept=".json" onChange={handleImportFile} className="hidden" />
                 </label>
             </div>
         </div>
