@@ -110,6 +110,7 @@ npm test
   - Implement keyboard navigation for controls and grid interactions.
   - Add additional unit testing throughout project (particularly for grid).
   - Dragging of control sheet on mobile
+  - Possibly add additional css or framer animations where applicable
 - **Infinite Time & Resources**:
   - Build a backend to save simulation states, share grids, or replay sessions.
   - Create a mobile app using React Native for seamless mobile interactions.
