@@ -1,4 +1,3 @@
-// hooks/useWindowSize.ts
 import { useState, useEffect } from 'react';
 
 const useWindowSize = () => {
